@@ -1,0 +1,3 @@
+sdfmilan065 slots=120
+sdfmilan070 slots=120
+sdfmilan128 slots=120

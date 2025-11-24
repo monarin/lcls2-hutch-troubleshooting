@@ -1,0 +1,27 @@
+max_events:
+batch_size: 1000
+h5:
+  path1: /sdf/data/lcls/ds/tmo/
+  path2: /scratch/xiangli/h5/
+  name1: run
+  name2: .h5
+log:
+  path1: /sdf/data/lcls/ds/tmo/
+  path2: /scratch/xiangli/log/
+  
+data:
+  uniform:
+    tpks_e:
+      len: 100
+      var: ['0', '1'] 
+  ragged_split:
+    tpks_e:
+      var: ['0', '1']
+  x:
+    scan: [var1]
+    bld: [gmd, xgmd]
+    fzp: [m1, area]
+    dest: [n]
+    timing: ['280','281','282','dest']
+    
+

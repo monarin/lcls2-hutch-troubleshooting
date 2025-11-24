@@ -1,0 +1,30 @@
+live: False
+max_events:
+batch_size: 1000
+xpand: True
+h5:
+  path1: /sdf/data/lcls/ds/tmo/
+  path2: /scratch/arp_test/h5/
+  name1: run
+  name2: .h5
+log:
+  path1: /sdf/data/lcls/ds/tmo/
+  path2: /scratch/arp_test/log/
+
+ 
+data:
+  ragged:
+    # hit_s:
+    #   var: [z, y, t, m]
+    hit_l:
+      var: [z, y, t, m]     
+
+
+
+  x:
+    scan: [var1, var2]
+    bld: [gmd, xgmd]
+    timing: ['280','281','282','dest']
+    atm: [edge, prom] 
+  #   epics: [las_ip2_atm_dly]
+

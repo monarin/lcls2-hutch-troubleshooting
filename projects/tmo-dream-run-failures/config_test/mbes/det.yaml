@@ -1,0 +1,39 @@
+etof:
+  module: dream.alg.common.peak_finders_scipy
+  alg: hsd_peak_finder
+  kwargs: {det_id: e, sig_names:['0', '1'], mapping:{'mbes_hsd0':'0','mbes_hsd1':'1'}}
+  return: {wf_e:['0', '1'], 
+           fex_e:['0', '1'], 
+           tpks_e:['0', '1'], 
+           n_tpks_e:['0', '1']}
+
+
+atm:
+  module: dream.alg.common.x
+  alg: atm
+  return: {atm: [line]}
+  
+fzp:
+  module: dream.alg.common.x
+  alg: fzp
+  return: {fzp:[xmax, m1, m2, area]}
+
+scan:
+  module: dream.alg.common.x
+  alg: scan
+  return: {scan:[var1, var2]}
+
+timing:
+  module: dream.alg.common.x
+  alg: timing
+  return: {timing:['280','281','282', 'dest']}  
+
+bld:
+  module: dream.alg.common.x
+  alg: bld
+  return: {bld:[gmd, xgmd]}    
+
+epics:
+  module: dream.alg.common.x
+  alg: epics
+  return: {epics:[abc]}   

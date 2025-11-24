@@ -1,0 +1,114 @@
+l:
+  det:
+    raw: false
+    fex: true
+    keys:
+      dream_hsd_lu: ["0", "1"]
+      dream_hsd_lv: ["0", "1"]
+      dream_hsd_lw: ["0", "1"]
+      dream_hsd_lmcp: ["0"]
+    mcp:
+      sample_interval: 0.16826923
+      fraction: 1
+      delay: 4
+      polarity: "Negative"
+      threshold: 1500
+      walk: 0
+      timerange_low: 200
+      timerange_high: 15000.0
+      offset: 16384
+    dld:
+      sample_interval: 0.16826923
+      fraction: 1
+      delay: 5
+      polarity: "Negative"
+      threshold: 1300
+      walk: 0
+      timerange_low: 200
+      timerange_high: 15000.0
+      offset: 20000
+  hr:
+    max_hits: 15
+    runtime_u: 154.5
+    runtime_v: 150.5
+    runtime_w: 154.0
+    u_diff_offset: 1.5
+    v_diff_offset: -2.5
+    w_diff_offset: 6
+    tsum_avg_u: 34.6
+    tsum_hw_u: 3
+    tsum_avg_v: 0.2
+    tsum_hw_v: 4
+    tsum_avg_w: 33.5
+    tsum_hw_w: 5
+    f_u: 0.784
+    f_v: 0.806
+    f_w: 0.783
+    pos_offset_x: 0
+    pos_offset_y: 0
+    w_offset: 0.625
+    rMCP: 62
+    dtime_dld: 20
+    dtime_mcp: 20
+    mth_max: 20      
+    
+s:
+  det:
+    raw: false
+    fex: true
+    keys:
+      dream_hsd_su: ["0", "1"]
+      dream_hsd_sv: ["0", "1"]
+      dream_hsd_sw: ["0", "1"]
+      dream_hsd_smcp: ["0"]
+    mcp:
+      sample_interval: 0.16826923
+      fraction: 1
+      delay: 4
+      polarity: "Negative"
+      threshold: 500
+      walk: 0
+      timerange_low: 0
+      timerange_high: 10000.0
+      offset: 20000
+    dld:
+      sample_interval: 0.16826923
+      fraction: 1
+      delay: 5
+      polarity: "Negative"
+      threshold: 500
+      walk: 0
+      timerange_low: 0
+      timerange_high: 10000.0
+      offset: 20000
+  hr:
+    max_hits: 15
+    runtime_u: 200
+    runtime_v: 200
+    runtime_w: 200
+    u_diff_offset: -7
+    v_diff_offset: 1269
+    w_diff_offset: 1263.5
+    tsum_avg_u: 2688
+    tsum_hw_u: 5
+    tsum_avg_v: 1415.7
+    tsum_hw_v: 5
+    tsum_avg_w: 1423
+    tsum_hw_w: 5
+    f_u: 0.789
+    f_v: 0.789
+    f_w: 0.777
+    pos_offset_x: 0
+    pos_offset_y: 0
+    w_offset: 0
+    rMCP: 65
+    dtime_dld: 20
+    dtime_mcp: 20
+    mth_max: 20   
+
+atm:
+  det:
+    keys: [atm_piranha_ip2]
+  gfw: 3
+  beta: 0.1
+          

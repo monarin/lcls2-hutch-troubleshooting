@@ -1,0 +1,23 @@
+e:
+  det:
+    raw: true
+    fex: true
+    keys:
+      mbes_hsd: ["0", "1"]
+    all:
+      prominence: 100
+      polarity: "Negative"
+      threshold: 560
+      timerange_low: 0
+      timerange_high: 10000.0
+      offset: 2045
+
+fzp:
+  det:
+    keys: [tmo_fzppiranha]
+  hw: 100 
+
+
+atm:
+  det:
+    keys: [tmo_atmpiranha]
