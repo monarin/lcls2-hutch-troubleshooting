@@ -26,17 +26,20 @@ from mpi4py import MPI
 from parallel_pread import ParallelPreader
 
 
-def load_offsets(offset_file: Path):
+def load_offsets(offset_file: Path, include_streams=None):
+    if include_streams:
+        include_set = set(include_streams)
+    else:
+        include_set = {"006", "007", "008", "009", "010"}
     with offset_file.open("rb") as f:
         payload = pickle.load(f)
-    target_streams = {"006", "007", "008", "009", "010"}
     jungfrau_streams = []
     for fname in payload["files"]:
         parts = fname.split("-")
         if len(parts) < 3:
             continue
         stream_part = parts[2]
-        if stream_part.startswith("s") and stream_part[1:] in target_streams:
+        if stream_part.startswith("s") and stream_part[1:] in include_set:
             jungfrau_streams.append(fname)
     jungfrau_streams.sort()
     if not jungfrau_streams:
@@ -74,13 +77,23 @@ def main():
     parser.add_argument("--offsets", required=True)
     parser.add_argument("--xtc-dir", required=True, help="Directory holding the actual XTC2 big-data files")
     parser.add_argument("--max-events", type=int, default=0, help="Optional limit")
+    parser.add_argument(
+        "--streams",
+        nargs="+",
+        help="Space-separated stream IDs to include (e.g. 006 007 008). Defaults to Jungfrau s006-s010.",
+    )
     args = parser.parse_args()
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
 
+    include_streams = args.streams if args.streams else None
     if rank == 0:
-        streams, arrays, n_events = load_offsets(Path(args.offsets))
+        streams, arrays, n_events = load_offsets(Path(args.offsets), include_streams=include_streams)
+        if include_streams:
+            print(f"[Rank 0] Reading requested streams: {', '.join(include_streams)}")
+        else:
+            print("[Rank 0] Reading default streams: 006 007 008 009 010")
         stacked = np.stack(arrays, axis=0).astype(np.int64)
     else:
         streams = None
@@ -170,6 +183,8 @@ def main():
     interval = 1000
     loop_start = time.time()
     interval_start = loop_start
+    total_bytes = 0
+    interval_bytes = 0
     while True:
         idx_local = fetch_next_index(win, shm_comm)
         if idx_local >= local_count:
@@ -177,6 +192,9 @@ def main():
         for i, arr in enumerate(arrays):
             offsets_arr[i] = arr[idx_local, 0]
             sizes_arr[i] = arr[idx_local, 1]
+        bytes_this = int(sizes_arr.sum())
+        interval_bytes += bytes_this
+        total_bytes += bytes_this
         preader.read(fds_arr, offsets_arr, sizes_arr)
         processed += 1
         global_idx = idx_local + node_start
@@ -184,11 +202,14 @@ def main():
             now = time.time()
             interval_time = now - interval_start
             rate = interval / interval_time if interval_time > 0 else 0.0
+            io_rate = (interval_bytes / interval_time) / (1024 * 1024) if interval_time > 0 else 0.0
             print(
                 f"[Rank {rank}] processed {processed} events (last global idx {global_idx}) "
-                f"Interval={interval_time:.2f}s Rate={rate:.1f} Hz"
+                f"Interval={interval_time:.2f}s Rate={rate:.1f} Hz "
+                f"IO={io_rate:.1f} MiB/s"
             )
             interval_start = now
+            interval_bytes = 0
 
     for fd in fds:
         os.close(fd)
@@ -197,11 +218,14 @@ def main():
     comm.Barrier()
     total = comm.reduce(processed, op=MPI.SUM, root=0)
     total_loop = comm.reduce(loop_elapsed, op=MPI.MAX, root=0)
+    total_io_bytes = comm.reduce(total_bytes, op=MPI.SUM, root=0)
     offsets_win.Free()
     if rank == 0:
         rate = total / total_loop if total_loop > 0 else 0.0
+        io_rate = (total_io_bytes / total_loop) / (1024 * 1024) if total_loop > 0 else 0.0
         print(f"Total processed events = {total} "
-              f"Elapsed={total_loop:.2f}s Rate={rate:.1f} Hz")
+              f"Elapsed={total_loop:.2f}s Rate={rate:.1f} Hz "
+              f"IO={io_rate:.1f} MiB/s")
 
 
 if __name__ == "__main__":
