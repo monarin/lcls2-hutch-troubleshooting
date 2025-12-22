@@ -9,8 +9,8 @@ extensions = [
     Extension(
         name="parallel_pread",
         sources=["parallel_pread.pyx"],
-        extra_compile_args=["-O3"],
-        extra_link_args=[],
+        extra_compile_args=["-O3", "-fopenmp"],
+        extra_link_args=["-fopenmp"],
     )
 ]
 

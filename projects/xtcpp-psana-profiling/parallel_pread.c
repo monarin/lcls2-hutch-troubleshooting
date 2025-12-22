@@ -5,7 +5,11 @@
     "distutils": {
         "depends": [],
         "extra_compile_args": [
-            "-O3"
+            "-O3",
+            "-fopenmp"
+        ],
+        "extra_link_args": [
+            "-fopenmp"
         ],
         "name": "parallel_pread",
         "sources": [
@@ -18472,9 +18476,9 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
   /* "parallel_pread.pyx":87
  * 
  *         cdef Py_ssize_t i
- *         with nogil:             # <<<<<<<<<<<<<<
- *             for i in prange(n, schedule='static'):
- *                 errcodes[i] = 0
+ *         for i in prange(n, schedule='static', nogil=True):             # <<<<<<<<<<<<<<
+ *             errcodes[i] = 0
+ *             if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
  */
   {
       #ifdef WITH_THREAD
@@ -18484,14 +18488,6 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       __Pyx_FastGIL_Remember();
       #endif
       /*try:*/ {
-
-        /* "parallel_pread.pyx":88
- *         cdef Py_ssize_t i
- *         with nogil:
- *             for i in prange(n, schedule='static'):             # <<<<<<<<<<<<<<
- *                 errcodes[i] = 0
- *                 if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
- */
         __pyx_t_11 = __pyx_v_n;
         {
             #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
@@ -18514,21 +18510,21 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
                         {
                             __pyx_v_i = (Py_ssize_t)(0 + 1 * __pyx_t_12);
 
-                            /* "parallel_pread.pyx":89
- *         with nogil:
- *             for i in prange(n, schedule='static'):
- *                 errcodes[i] = 0             # <<<<<<<<<<<<<<
- *                 if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
- *                     errcodes[i] = -2  # size error
+                            /* "parallel_pread.pyx":88
+ *         cdef Py_ssize_t i
+ *         for i in prange(n, schedule='static', nogil=True):
+ *             errcodes[i] = 0             # <<<<<<<<<<<<<<
+ *             if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
+ *                 errcodes[i] = -2  # size error
  */
                             (__pyx_v_errcodes[__pyx_v_i]) = 0;
 
-                            /* "parallel_pread.pyx":90
- *             for i in prange(n, schedule='static'):
- *                 errcodes[i] = 0
- *                 if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:             # <<<<<<<<<<<<<<
- *                     errcodes[i] = -2  # size error
- *                     read_counts[i] = -1
+                            /* "parallel_pread.pyx":89
+ *         for i in prange(n, schedule='static', nogil=True):
+ *             errcodes[i] = 0
+ *             if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:             # <<<<<<<<<<<<<<
+ *                 errcodes[i] = -2  # size error
+ *                 read_counts[i] = -1
  */
                             __pyx_t_14 = __pyx_v_i;
                             __pyx_t_10 = ((*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_14 * __pyx_v_sizes.strides[0]) ))) < 0);
@@ -18543,122 +18539,122 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
                             __pyx_L20_bool_binop_done:;
                             if (__pyx_t_9) {
 
-                              /* "parallel_pread.pyx":91
- *                 errcodes[i] = 0
- *                 if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
- *                     errcodes[i] = -2  # size error             # <<<<<<<<<<<<<<
- *                     read_counts[i] = -1
- *                     continue
+                              /* "parallel_pread.pyx":90
+ *             errcodes[i] = 0
+ *             if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
+ *                 errcodes[i] = -2  # size error             # <<<<<<<<<<<<<<
+ *                 read_counts[i] = -1
+ *                 continue
  */
                               (__pyx_v_errcodes[__pyx_v_i]) = -2;
 
-                              /* "parallel_pread.pyx":92
- *                 if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
- *                     errcodes[i] = -2  # size error
- *                     read_counts[i] = -1             # <<<<<<<<<<<<<<
- *                     continue
- *                 read_counts[i] = pread(fds[i],
+                              /* "parallel_pread.pyx":91
+ *             if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
+ *                 errcodes[i] = -2  # size error
+ *                 read_counts[i] = -1             # <<<<<<<<<<<<<<
+ *                 continue
+ *             read_counts[i] = pread(fds[i],
  */
                               (__pyx_v_read_counts[__pyx_v_i]) = -1L;
 
-                              /* "parallel_pread.pyx":93
- *                     errcodes[i] = -2  # size error
- *                     read_counts[i] = -1
- *                     continue             # <<<<<<<<<<<<<<
- *                 read_counts[i] = pread(fds[i],
- *                                        <void*> self.buffers[i],
+                              /* "parallel_pread.pyx":92
+ *                 errcodes[i] = -2  # size error
+ *                 read_counts[i] = -1
+ *                 continue             # <<<<<<<<<<<<<<
+ *             read_counts[i] = pread(fds[i],
+ *                                    <void*> self.buffers[i],
  */
                               goto __pyx_L15_continue;
 
-                              /* "parallel_pread.pyx":90
- *             for i in prange(n, schedule='static'):
- *                 errcodes[i] = 0
- *                 if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:             # <<<<<<<<<<<<<<
- *                     errcodes[i] = -2  # size error
- *                     read_counts[i] = -1
+                              /* "parallel_pread.pyx":89
+ *         for i in prange(n, schedule='static', nogil=True):
+ *             errcodes[i] = 0
+ *             if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:             # <<<<<<<<<<<<<<
+ *                 errcodes[i] = -2  # size error
+ *                 read_counts[i] = -1
  */
                             }
 
-                            /* "parallel_pread.pyx":94
- *                     read_counts[i] = -1
- *                     continue
- *                 read_counts[i] = pread(fds[i],             # <<<<<<<<<<<<<<
- *                                        <void*> self.buffers[i],
- *                                        <size_t> sizes[i],
+                            /* "parallel_pread.pyx":93
+ *                 read_counts[i] = -1
+ *                 continue
+ *             read_counts[i] = pread(fds[i],             # <<<<<<<<<<<<<<
+ *                                    <void*> self.buffers[i],
+ *                                    <size_t> sizes[i],
  */
                             __pyx_t_14 = __pyx_v_i;
 
-                            /* "parallel_pread.pyx":96
- *                 read_counts[i] = pread(fds[i],
- *                                        <void*> self.buffers[i],
- *                                        <size_t> sizes[i],             # <<<<<<<<<<<<<<
- *                                        offsets[i])
- *                 if read_counts[i] != sizes[i]:
+                            /* "parallel_pread.pyx":95
+ *             read_counts[i] = pread(fds[i],
+ *                                    <void*> self.buffers[i],
+ *                                    <size_t> sizes[i],             # <<<<<<<<<<<<<<
+ *                                    offsets[i])
+ *             if read_counts[i] != sizes[i]:
  */
                             __pyx_t_15 = __pyx_v_i;
 
-                            /* "parallel_pread.pyx":97
- *                                        <void*> self.buffers[i],
- *                                        <size_t> sizes[i],
- *                                        offsets[i])             # <<<<<<<<<<<<<<
- *                 if read_counts[i] != sizes[i]:
- *                     if read_counts[i] < 0:
+                            /* "parallel_pread.pyx":96
+ *                                    <void*> self.buffers[i],
+ *                                    <size_t> sizes[i],
+ *                                    offsets[i])             # <<<<<<<<<<<<<<
+ *             if read_counts[i] != sizes[i]:
+ *                 if read_counts[i] < 0:
  */
                             __pyx_t_16 = __pyx_v_i;
 
-                            /* "parallel_pread.pyx":94
- *                     read_counts[i] = -1
- *                     continue
- *                 read_counts[i] = pread(fds[i],             # <<<<<<<<<<<<<<
- *                                        <void*> self.buffers[i],
- *                                        <size_t> sizes[i],
+                            /* "parallel_pread.pyx":93
+ *                 read_counts[i] = -1
+ *                 continue
+ *             read_counts[i] = pread(fds[i],             # <<<<<<<<<<<<<<
+ *                                    <void*> self.buffers[i],
+ *                                    <size_t> sizes[i],
  */
                             (__pyx_v_read_counts[__pyx_v_i]) = pread((*((int *) ( /* dim=0 */ (__pyx_v_fds.data + __pyx_t_14 * __pyx_v_fds.strides[0]) ))), ((void *)(__pyx_v_self->buffers[__pyx_v_i])), ((size_t)(*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_15 * __pyx_v_sizes.strides[0]) )))), (*((PY_LONG_LONG *) ( /* dim=0 */ (__pyx_v_offsets.data + __pyx_t_16 * __pyx_v_offsets.strides[0]) ))));
 
-                            /* "parallel_pread.pyx":98
- *                                        <size_t> sizes[i],
- *                                        offsets[i])
- *                 if read_counts[i] != sizes[i]:             # <<<<<<<<<<<<<<
- *                     if read_counts[i] < 0:
- *                         errcodes[i] = errno
+                            /* "parallel_pread.pyx":97
+ *                                    <size_t> sizes[i],
+ *                                    offsets[i])
+ *             if read_counts[i] != sizes[i]:             # <<<<<<<<<<<<<<
+ *                 if read_counts[i] < 0:
+ *                     errcodes[i] = errno
  */
                             __pyx_t_16 = __pyx_v_i;
                             __pyx_t_9 = ((__pyx_v_read_counts[__pyx_v_i]) != (*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_16 * __pyx_v_sizes.strides[0]) ))));
                             if (__pyx_t_9) {
 
-                              /* "parallel_pread.pyx":99
- *                                        offsets[i])
- *                 if read_counts[i] != sizes[i]:
- *                     if read_counts[i] < 0:             # <<<<<<<<<<<<<<
- *                         errcodes[i] = errno
- *                     else:
+                              /* "parallel_pread.pyx":98
+ *                                    offsets[i])
+ *             if read_counts[i] != sizes[i]:
+ *                 if read_counts[i] < 0:             # <<<<<<<<<<<<<<
+ *                     errcodes[i] = errno
+ *                 else:
  */
                               __pyx_t_9 = ((__pyx_v_read_counts[__pyx_v_i]) < 0);
                               if (__pyx_t_9) {
 
-                                /* "parallel_pread.pyx":100
- *                 if read_counts[i] != sizes[i]:
- *                     if read_counts[i] < 0:
- *                         errcodes[i] = errno             # <<<<<<<<<<<<<<
- *                     else:
- *                         errcodes[i] = -1  # short read
+                                /* "parallel_pread.pyx":99
+ *             if read_counts[i] != sizes[i]:
+ *                 if read_counts[i] < 0:
+ *                     errcodes[i] = errno             # <<<<<<<<<<<<<<
+ *                 else:
+ *                     errcodes[i] = -1  # short read
  */
                                 (__pyx_v_errcodes[__pyx_v_i]) = errno;
 
-                                /* "parallel_pread.pyx":99
- *                                        offsets[i])
- *                 if read_counts[i] != sizes[i]:
- *                     if read_counts[i] < 0:             # <<<<<<<<<<<<<<
- *                         errcodes[i] = errno
- *                     else:
+                                /* "parallel_pread.pyx":98
+ *                                    offsets[i])
+ *             if read_counts[i] != sizes[i]:
+ *                 if read_counts[i] < 0:             # <<<<<<<<<<<<<<
+ *                     errcodes[i] = errno
+ *                 else:
  */
                                 goto __pyx_L23;
                               }
 
-                              /* "parallel_pread.pyx":102
- *                         errcodes[i] = errno
- *                     else:
- *                         errcodes[i] = -1  # short read             # <<<<<<<<<<<<<<
+                              /* "parallel_pread.pyx":101
+ *                     errcodes[i] = errno
+ *                 else:
+ *                     errcodes[i] = -1  # short read             # <<<<<<<<<<<<<<
  * 
  *         cdef list views = []
  */
@@ -18667,12 +18663,12 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
                               }
                               __pyx_L23:;
 
-                              /* "parallel_pread.pyx":98
- *                                        <size_t> sizes[i],
- *                                        offsets[i])
- *                 if read_counts[i] != sizes[i]:             # <<<<<<<<<<<<<<
- *                     if read_counts[i] < 0:
- *                         errcodes[i] = errno
+                              /* "parallel_pread.pyx":97
+ *                                    <size_t> sizes[i],
+ *                                    offsets[i])
+ *             if read_counts[i] != sizes[i]:             # <<<<<<<<<<<<<<
+ *                 if read_counts[i] < 0:
+ *                     errcodes[i] = errno
  */
                             }
                             goto __pyx_L25;
@@ -18695,9 +18691,9 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       /* "parallel_pread.pyx":87
  * 
  *         cdef Py_ssize_t i
- *         with nogil:             # <<<<<<<<<<<<<<
- *             for i in prange(n, schedule='static'):
- *                 errcodes[i] = 0
+ *         for i in prange(n, schedule='static', nogil=True):             # <<<<<<<<<<<<<<
+ *             errcodes[i] = 0
+ *             if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
  */
       /*finally:*/ {
         /*normal exit:*/{
@@ -18711,19 +18707,19 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       }
   }
 
-  /* "parallel_pread.pyx":104
- *                         errcodes[i] = -1  # short read
+  /* "parallel_pread.pyx":103
+ *                     errcodes[i] = -1  # short read
  * 
  *         cdef list views = []             # <<<<<<<<<<<<<<
  *         cdef Py_ssize_t bytes_read
  *         cdef int err
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 104, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_views = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "parallel_pread.pyx":107
+  /* "parallel_pread.pyx":106
  *         cdef Py_ssize_t bytes_read
  *         cdef int err
  *         cdef int ok = 1             # <<<<<<<<<<<<<<
@@ -18732,7 +18728,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
   __pyx_v_ok = 1;
 
-  /* "parallel_pread.pyx":109
+  /* "parallel_pread.pyx":108
  *         cdef int ok = 1
  *         cdef int idx
  *         for idx in range(n):             # <<<<<<<<<<<<<<
@@ -18744,7 +18740,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
   for (__pyx_t_17 = 0; __pyx_t_17 < __pyx_t_12; __pyx_t_17+=1) {
     __pyx_v_idx = __pyx_t_17;
 
-    /* "parallel_pread.pyx":110
+    /* "parallel_pread.pyx":109
  *         cdef int idx
  *         for idx in range(n):
  *             err = errcodes[idx]             # <<<<<<<<<<<<<<
@@ -18753,7 +18749,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
     __pyx_v_err = (__pyx_v_errcodes[__pyx_v_idx]);
 
-    /* "parallel_pread.pyx":111
+    /* "parallel_pread.pyx":110
  *         for idx in range(n):
  *             err = errcodes[idx]
  *             bytes_read = read_counts[idx]             # <<<<<<<<<<<<<<
@@ -18762,7 +18758,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
     __pyx_v_bytes_read = (__pyx_v_read_counts[__pyx_v_idx]);
 
-    /* "parallel_pread.pyx":112
+    /* "parallel_pread.pyx":111
  *             err = errcodes[idx]
  *             bytes_read = read_counts[idx]
  *             if err != 0 or bytes_read < 0:             # <<<<<<<<<<<<<<
@@ -18780,7 +18776,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
     __pyx_L29_bool_binop_done:;
     if (__pyx_t_9) {
 
-      /* "parallel_pread.pyx":113
+      /* "parallel_pread.pyx":112
  *             bytes_read = read_counts[idx]
  *             if err != 0 or bytes_read < 0:
  *                 ok = 0             # <<<<<<<<<<<<<<
@@ -18789,7 +18785,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
       __pyx_v_ok = 0;
 
-      /* "parallel_pread.pyx":114
+      /* "parallel_pread.pyx":113
  *             if err != 0 or bytes_read < 0:
  *                 ok = 0
  *                 break             # <<<<<<<<<<<<<<
@@ -18798,7 +18794,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
       goto __pyx_L27_break;
 
-      /* "parallel_pread.pyx":112
+      /* "parallel_pread.pyx":111
  *             err = errcodes[idx]
  *             bytes_read = read_counts[idx]
  *             if err != 0 or bytes_read < 0:             # <<<<<<<<<<<<<<
@@ -18807,7 +18803,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
     }
 
-    /* "parallel_pread.pyx":116
+    /* "parallel_pread.pyx":115
  *                 break
  *             mv = PyMemoryView_FromMemory(<char*> self.buffers[idx],
  *                                          sizes[idx],             # <<<<<<<<<<<<<<
@@ -18816,30 +18812,30 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
     __pyx_t_16 = __pyx_v_idx;
 
-    /* "parallel_pread.pyx":115
+    /* "parallel_pread.pyx":114
  *                 ok = 0
  *                 break
  *             mv = PyMemoryView_FromMemory(<char*> self.buffers[idx],             # <<<<<<<<<<<<<<
  *                                          sizes[idx],
  *                                          PyBUF_READ)
  */
-    __pyx_t_1 = PyMemoryView_FromMemory(((char *)(__pyx_v_self->buffers[__pyx_v_idx])), (*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_16 * __pyx_v_sizes.strides[0]) ))), PyBUF_READ); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 115, __pyx_L1_error)
+    __pyx_t_1 = PyMemoryView_FromMemory(((char *)(__pyx_v_self->buffers[__pyx_v_idx])), (*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_16 * __pyx_v_sizes.strides[0]) ))), PyBUF_READ); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 114, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_XDECREF_SET(__pyx_v_mv, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "parallel_pread.pyx":118
+    /* "parallel_pread.pyx":117
  *                                          sizes[idx],
  *                                          PyBUF_READ)
  *             views.append(mv)             # <<<<<<<<<<<<<<
  * 
  *         free(read_counts)
  */
-    __pyx_t_18 = __Pyx_PyList_Append(__pyx_v_views, __pyx_v_mv); if (unlikely(__pyx_t_18 == ((int)-1))) __PYX_ERR(0, 118, __pyx_L1_error)
+    __pyx_t_18 = __Pyx_PyList_Append(__pyx_v_views, __pyx_v_mv); if (unlikely(__pyx_t_18 == ((int)-1))) __PYX_ERR(0, 117, __pyx_L1_error)
   }
   __pyx_L27_break:;
 
-  /* "parallel_pread.pyx":120
+  /* "parallel_pread.pyx":119
  *             views.append(mv)
  * 
  *         free(read_counts)             # <<<<<<<<<<<<<<
@@ -18848,7 +18844,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
   free(__pyx_v_read_counts);
 
-  /* "parallel_pread.pyx":121
+  /* "parallel_pread.pyx":120
  * 
  *         free(read_counts)
  *         free(errcodes)             # <<<<<<<<<<<<<<
@@ -18857,7 +18853,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
   free(__pyx_v_errcodes);
 
-  /* "parallel_pread.pyx":123
+  /* "parallel_pread.pyx":122
  *         free(errcodes)
  * 
  *         if not ok:             # <<<<<<<<<<<<<<
@@ -18867,7 +18863,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
   __pyx_t_9 = (!(__pyx_v_ok != 0));
   if (__pyx_t_9) {
 
-    /* "parallel_pread.pyx":124
+    /* "parallel_pread.pyx":123
  * 
  *         if not ok:
  *             if err == -2:             # <<<<<<<<<<<<<<
@@ -18877,14 +18873,14 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
     switch (__pyx_v_err) {
       case -2L:
 
-      /* "parallel_pread.pyx":125
+      /* "parallel_pread.pyx":124
  *         if not ok:
  *             if err == -2:
  *                 raise ValueError(f"Requested size {sizes[idx]} exceeds buffer capacity")             # <<<<<<<<<<<<<<
  *             elif err == -1:
  *                 raise IOError(f"Short read for stream {idx}: expected {sizes[idx]}, got {bytes_read}")
  */
-      __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 125, __pyx_L1_error)
+      __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 124, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_t_13 = 0;
       __pyx_t_19 = 127;
@@ -18893,7 +18889,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       __Pyx_GIVEREF(__pyx_kp_u_Requested_size);
       PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_kp_u_Requested_size);
       __pyx_t_16 = __pyx_v_idx;
-      __pyx_t_2 = __Pyx_PyUnicode_From_Py_ssize_t((*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_16 * __pyx_v_sizes.strides[0]) ))), 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 125, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyUnicode_From_Py_ssize_t((*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_16 * __pyx_v_sizes.strides[0]) ))), 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 124, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2);
       __Pyx_GIVEREF(__pyx_t_2);
@@ -18903,17 +18899,17 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       __pyx_t_13 += 24;
       __Pyx_GIVEREF(__pyx_kp_u_exceeds_buffer_capacity);
       PyTuple_SET_ITEM(__pyx_t_1, 2, __pyx_kp_u_exceeds_buffer_capacity);
-      __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_1, 3, __pyx_t_13, __pyx_t_19); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 125, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_1, 3, __pyx_t_13, __pyx_t_19); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 124, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 125, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 124, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_Raise(__pyx_t_1, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __PYX_ERR(0, 125, __pyx_L1_error)
+      __PYX_ERR(0, 124, __pyx_L1_error)
 
-      /* "parallel_pread.pyx":124
+      /* "parallel_pread.pyx":123
  * 
  *         if not ok:
  *             if err == -2:             # <<<<<<<<<<<<<<
@@ -18923,14 +18919,14 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       break;
       case -1L:
 
-      /* "parallel_pread.pyx":127
+      /* "parallel_pread.pyx":126
  *                 raise ValueError(f"Requested size {sizes[idx]} exceeds buffer capacity")
  *             elif err == -1:
  *                 raise IOError(f"Short read for stream {idx}: expected {sizes[idx]}, got {bytes_read}")             # <<<<<<<<<<<<<<
  *             else:
  *                 raise OSError(err, strerror(err))
  */
-      __pyx_t_1 = PyTuple_New(6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __pyx_t_1 = PyTuple_New(6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 126, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_t_13 = 0;
       __pyx_t_19 = 127;
@@ -18938,7 +18934,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       __pyx_t_13 += 22;
       __Pyx_GIVEREF(__pyx_kp_u_Short_read_for_stream);
       PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_kp_u_Short_read_for_stream);
-      __pyx_t_2 = __Pyx_PyUnicode_From_int(__pyx_v_idx, 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyUnicode_From_int(__pyx_v_idx, 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 126, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2);
       __Pyx_GIVEREF(__pyx_t_2);
@@ -18949,7 +18945,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       __Pyx_GIVEREF(__pyx_kp_u_expected);
       PyTuple_SET_ITEM(__pyx_t_1, 2, __pyx_kp_u_expected);
       __pyx_t_16 = __pyx_v_idx;
-      __pyx_t_2 = __Pyx_PyUnicode_From_Py_ssize_t((*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_16 * __pyx_v_sizes.strides[0]) ))), 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyUnicode_From_Py_ssize_t((*((Py_ssize_t *) ( /* dim=0 */ (__pyx_v_sizes.data + __pyx_t_16 * __pyx_v_sizes.strides[0]) ))), 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 126, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2);
       __Pyx_GIVEREF(__pyx_t_2);
@@ -18959,23 +18955,23 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       __pyx_t_13 += 6;
       __Pyx_GIVEREF(__pyx_kp_u_got_2);
       PyTuple_SET_ITEM(__pyx_t_1, 4, __pyx_kp_u_got_2);
-      __pyx_t_2 = __Pyx_PyUnicode_From_Py_ssize_t(__pyx_v_bytes_read, 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyUnicode_From_Py_ssize_t(__pyx_v_bytes_read, 0, ' ', 'd'); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 126, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2);
       __Pyx_GIVEREF(__pyx_t_2);
       PyTuple_SET_ITEM(__pyx_t_1, 5, __pyx_t_2);
       __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_1, 6, __pyx_t_13, __pyx_t_19); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_1, 6, __pyx_t_13, __pyx_t_19); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 126, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_IOError, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_IOError, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 126, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_Raise(__pyx_t_1, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __PYX_ERR(0, 127, __pyx_L1_error)
+      __PYX_ERR(0, 126, __pyx_L1_error)
 
-      /* "parallel_pread.pyx":126
+      /* "parallel_pread.pyx":125
  *             if err == -2:
  *                 raise ValueError(f"Requested size {sizes[idx]} exceeds buffer capacity")
  *             elif err == -1:             # <<<<<<<<<<<<<<
@@ -18985,35 +18981,35 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
       break;
       default:
 
-      /* "parallel_pread.pyx":129
+      /* "parallel_pread.pyx":128
  *                 raise IOError(f"Short read for stream {idx}: expected {sizes[idx]}, got {bytes_read}")
  *             else:
  *                 raise OSError(err, strerror(err))             # <<<<<<<<<<<<<<
  * 
  *         return views
  */
-      __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_err); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 129, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_err); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 128, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_2 = __Pyx_PyBytes_FromString(strerror(__pyx_v_err)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 129, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyBytes_FromString(strerror(__pyx_v_err)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 128, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 129, __pyx_L1_error)
+      __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 128, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GIVEREF(__pyx_t_1);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_1)) __PYX_ERR(0, 129, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_1)) __PYX_ERR(0, 128, __pyx_L1_error);
       __Pyx_GIVEREF(__pyx_t_2);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_2)) __PYX_ERR(0, 129, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_2)) __PYX_ERR(0, 128, __pyx_L1_error);
       __pyx_t_1 = 0;
       __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_OSError, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 129, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_OSError, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 128, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_Raise(__pyx_t_2, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __PYX_ERR(0, 129, __pyx_L1_error)
+      __PYX_ERR(0, 128, __pyx_L1_error)
       break;
     }
 
-    /* "parallel_pread.pyx":123
+    /* "parallel_pread.pyx":122
  *         free(errcodes)
  * 
  *         if not ok:             # <<<<<<<<<<<<<<
@@ -19022,7 +19018,7 @@ static PyObject *__pyx_f_14parallel_pread_15ParallelPreader_read(struct __pyx_ob
  */
   }
 
-  /* "parallel_pread.pyx":131
+  /* "parallel_pread.pyx":130
  *                 raise OSError(err, strerror(err))
  * 
  *         return views             # <<<<<<<<<<<<<<
@@ -20715,8 +20711,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 30, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(0, 36, __pyx_L1_error)
   __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 43, __pyx_L1_error)
-  __pyx_builtin_IOError = __Pyx_GetBuiltinName(__pyx_n_s_IOError); if (!__pyx_builtin_IOError) __PYX_ERR(0, 127, __pyx_L1_error)
-  __pyx_builtin_OSError = __Pyx_GetBuiltinName(__pyx_n_s_OSError); if (!__pyx_builtin_OSError) __PYX_ERR(0, 129, __pyx_L1_error)
+  __pyx_builtin_IOError = __Pyx_GetBuiltinName(__pyx_n_s_IOError); if (!__pyx_builtin_IOError) __PYX_ERR(0, 126, __pyx_L1_error)
+  __pyx_builtin_OSError = __Pyx_GetBuiltinName(__pyx_n_s_OSError); if (!__pyx_builtin_OSError) __PYX_ERR(0, 128, __pyx_L1_error)
   __pyx_builtin_TypeError = __Pyx_GetBuiltinName(__pyx_n_s_TypeError); if (!__pyx_builtin_TypeError) __PYX_ERR(1, 2, __pyx_L1_error)
   __pyx_builtin___import__ = __Pyx_GetBuiltinName(__pyx_n_s_import); if (!__pyx_builtin___import__) __PYX_ERR(1, 100, __pyx_L1_error)
   __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(1, 159, __pyx_L1_error)

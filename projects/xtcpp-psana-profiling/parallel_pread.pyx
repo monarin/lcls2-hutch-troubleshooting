@@ -84,22 +84,21 @@ cdef class ParallelPreader:
             raise MemoryError()
 
         cdef Py_ssize_t i
-        with nogil:
-            for i in prange(n, schedule='static'):
-                errcodes[i] = 0
-                if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
-                    errcodes[i] = -2  # size error
-                    read_counts[i] = -1
-                    continue
-                read_counts[i] = pread(fds[i],
-                                       <void*> self.buffers[i],
-                                       <size_t> sizes[i],
-                                       offsets[i])
-                if read_counts[i] != sizes[i]:
-                    if read_counts[i] < 0:
-                        errcodes[i] = errno
-                    else:
-                        errcodes[i] = -1  # short read
+        for i in prange(n, schedule='static', nogil=True):
+            errcodes[i] = 0
+            if sizes[i] < 0 or <size_t>sizes[i] > self.max_sizes[i]:
+                errcodes[i] = -2  # size error
+                read_counts[i] = -1
+                continue
+            read_counts[i] = pread(fds[i],
+                                   <void*> self.buffers[i],
+                                   <size_t> sizes[i],
+                                   offsets[i])
+            if read_counts[i] != sizes[i]:
+                if read_counts[i] < 0:
+                    errcodes[i] = errno
+                else:
+                    errcodes[i] = -1  # short read
 
         cdef list views = []
         cdef Py_ssize_t bytes_read

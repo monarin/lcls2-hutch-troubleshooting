@@ -63,13 +63,58 @@ def atomic_counter_init(comm: MPI.Comm):
     return win, buf
 
 
-def fetch_next_index(win: MPI.Win, comm: MPI.Comm) -> int:
-    one = np.array([1], dtype="i")
+def reserve_event_block(win: MPI.Win, comm: MPI.Comm, grant_size: int, limit: int):
+    """Atomically reserve a block of events and return (start, end) bounds."""
+    one = np.array([grant_size], dtype="i")
     result = np.zeros(1, dtype="i")
     win.Lock(rank=0)
     win.Fetch_and_op(one, result, target_rank=0, op=MPI.SUM)
     win.Unlock(0)
-    return int(result[0])
+    start = int(result[0])
+    if start >= limit:
+        return None
+    end = min(start + grant_size, limit)
+    return start, end
+
+
+def _stream_chunk_length(stream_offsets: np.ndarray, start_idx: int, end_idx: int) -> int:
+    """Compute contiguous byte length required to cover [start_idx, end_idx) events."""
+    if start_idx >= end_idx:
+        return 0
+    first_offset = int(stream_offsets[start_idx, 0])
+    last_offset = int(stream_offsets[end_idx - 1, 0])
+    last_size = int(stream_offsets[end_idx - 1, 1])
+    return (last_offset + last_size) - first_offset
+
+
+def estimate_chunk_capacities(stream_arrays, events_per_chunk: int):
+    """Return per-stream max bytes needed for the configured chunk size."""
+    capacities = []
+    step = max(1, events_per_chunk)
+    for arr in stream_arrays:
+        event_count = arr.shape[0]
+        max_len = 1
+        if event_count > 0:
+            cursor = 0
+            while cursor < event_count:
+                chunk_end = min(cursor + step, event_count)
+                chunk_len = _stream_chunk_length(arr, cursor, chunk_end)
+                if chunk_len > max_len:
+                    max_len = chunk_len
+                cursor += step
+        capacities.append(max_len)
+    return capacities
+
+
+def populate_chunk(arrays, start_idx: int, end_idx: int, offsets_out, sizes_out) -> int:
+    """Fill offsets/sizes for the chunk and return total bytes across all streams."""
+    total = 0
+    for idx, arr in enumerate(arrays):
+        length = _stream_chunk_length(arr, start_idx, end_idx)
+        offsets_out[idx] = arr[start_idx, 0] if start_idx < end_idx else 0
+        sizes_out[idx] = length
+        total += length
+    return int(total)
 
 
 def main():
@@ -82,10 +127,34 @@ def main():
         nargs="+",
         help="Space-separated stream IDs to include (e.g. 006 007 008). Defaults to Jungfrau s006-s010.",
     )
+    parser.add_argument(
+        "--events-per-grant",
+        type=int,
+        default=32,
+        help="How many events each MPI Fetch_and_op should reserve (must be >= 1).",
+    )
+    parser.add_argument(
+        "--report-interval",
+        type=int,
+        default=1000,
+        help="Print progress after processing this many events (0 disables).",
+    )
     args = parser.parse_args()
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
+    events_per_grant = max(1, args.events_per_grant)
+    report_interval = max(0, args.report_interval)
+    if rank == 0:
+        print(
+            "[Rank 0] marching_pread parameters:\n"
+            f"  offsets        : {args.offsets}\n"
+            f"  xtc-dir        : {args.xtc_dir}\n"
+            f"  max-events     : {args.max_events or 'all'}\n"
+            f"  streams        : {', '.join(args.streams) if args.streams else 'default (006-010)'}\n"
+            f"  events-per-grant: {events_per_grant}\n"
+            f"  report-interval: {report_interval}"
+        )
 
     include_streams = args.streams if args.streams else None
     if rank == 0:
@@ -104,10 +173,11 @@ def main():
     n_events = comm.bcast(n_events, root=0)
     if args.max_events:
         n_events = min(n_events, args.max_events)
-
     num_streams = len(streams)
     stacked_shape = stacked.shape if rank == 0 else None
     stacked_shape = comm.bcast(stacked_shape, root=0)
+    if rank == 0:
+        print(f"[Rank 0] Planned global events: {n_events} across {num_streams} streams")
 
     # Create shared windows per node and broadcast stacked offsets to node leaders.
     shm_comm = comm.Split_type(MPI.COMM_TYPE_SHARED, rank, MPI.INFO_NULL)
@@ -129,7 +199,8 @@ def main():
     local_count = node_end - node_start
     local_shape = (num_streams, local_count, stacked.shape[2]) if rank == 0 else None
     local_shape = comm.bcast(local_shape, root=0)
-    print(f'[Rank {rank}] node_rank={node_rank} is_node_leader={is_node_leader} local_count={local_count} ')
+    if is_node_leader:
+        print(f'[Rank {rank}] node_rank={node_rank} is_node_leader={is_node_leader} local_count={local_count} ')
 
     if rank == 0:
         slices = [stacked[:, (i * n_events) // num_nodes: ((i + 1) * n_events) // num_nodes, :]
@@ -162,53 +233,74 @@ def main():
 
     arrays = [shared_offsets[i] for i in range(num_streams)]
 
+    chunk_caps = np.ones(num_streams, dtype=np.int64)
+    if is_node_leader and num_streams > 0:
+        chunk_caps[:] = estimate_chunk_capacities(arrays, events_per_grant)
+    shm_comm.Bcast(chunk_caps, root=0)
+
     # Pre-open all Jungfrau streams for pread
     xtc_dir = Path(args.xtc_dir)
     fds = []
     for fname in streams:
         path = xtc_dir / fname
-        fd = os.open(path, os.O_RDONLY)
+        fd = os.open(path, os.O_DIRECT)
         fds.append(fd)
         if rank == 0:
             print(f"[Rank 0] Opened {path}")
     fds_arr = np.asarray(fds, dtype=np.intc)
-    max_sizes = [int(arr[:, 1].max()) for arr in arrays]
+    max_sizes = chunk_caps.tolist()
     preader = ParallelPreader(len(streams), max_sizes)
     offsets_arr = np.zeros(len(streams), dtype=np.int64)
     sizes_arr = np.zeros(len(streams), dtype=np.intp)
 
-    win, counter_buf = atomic_counter_init(shm_comm)
+    win, _ = atomic_counter_init(shm_comm)
 
-    processed = 0
-    interval = 1000
+    processed_events = 0
+    events_since_report = 0
     loop_start = time.time()
     interval_start = loop_start
     total_bytes = 0
     interval_bytes = 0
+    grants_logged = 0
+    node_label = f"leader {leader_rank}" if leader_comm else "single-node"
     while True:
-        idx_local = fetch_next_index(win, shm_comm)
-        if idx_local >= local_count:
+        block = reserve_event_block(win, shm_comm, events_per_grant, local_count)
+        if block is None:
             break
-        for i, arr in enumerate(arrays):
-            offsets_arr[i] = arr[idx_local, 0]
-            sizes_arr[i] = arr[idx_local, 1]
-        bytes_this = int(sizes_arr.sum())
-        interval_bytes += bytes_this
-        total_bytes += bytes_this
+        block_start, block_end = block
+        if block_end <= block_start:
+            continue
+        block_bytes = populate_chunk(arrays, block_start, block_end, offsets_arr, sizes_arr)
+        if grants_logged < 3 and is_node_leader:
+            desc = ", ".join(
+                f"{streams[i]}:{sizes_arr[i]/(1024*1024):.2f} MiB"
+                for i in range(len(streams))
+            )
+            print(
+                f"[Node {node_label} rank {rank}] Grant {grants_logged + 1} "
+                f"events[{node_start + block_start},{node_start + block_end}) "
+                f"bytes per stream: {desc}"
+            )
+            grants_logged += 1
         preader.read(fds_arr, offsets_arr, sizes_arr)
-        processed += 1
-        global_idx = idx_local + node_start
-        if processed and processed % interval == 0:
+        events_in_block = block_end - block_start
+        processed_events += events_in_block
+        events_since_report += events_in_block
+        total_bytes += block_bytes
+        interval_bytes += block_bytes
+        global_idx = node_start + block_end - 1
+        if report_interval > 0 and events_since_report >= report_interval:
             now = time.time()
             interval_time = now - interval_start
-            rate = interval / interval_time if interval_time > 0 else 0.0
+            rate = events_since_report / interval_time if interval_time > 0 else 0.0
             io_rate = (interval_bytes / interval_time) / (1024 * 1024) if interval_time > 0 else 0.0
             print(
-                f"[Rank {rank}] processed {processed} events (last global idx {global_idx}) "
+                f"[Rank {rank}] processed {processed_events} events (last global idx {global_idx}) "
                 f"Interval={interval_time:.2f}s Rate={rate:.1f} Hz "
                 f"IO={io_rate:.1f} MiB/s"
             )
             interval_start = now
+            events_since_report = 0
             interval_bytes = 0
 
     for fd in fds:
@@ -216,7 +308,7 @@ def main():
     loop_elapsed = time.time() - loop_start
     win.Free()
     comm.Barrier()
-    total = comm.reduce(processed, op=MPI.SUM, root=0)
+    total = comm.reduce(processed_events, op=MPI.SUM, root=0)
     total_loop = comm.reduce(loop_elapsed, op=MPI.MAX, root=0)
     total_io_bytes = comm.reduce(total_bytes, op=MPI.SUM, root=0)
     offsets_win.Free()
