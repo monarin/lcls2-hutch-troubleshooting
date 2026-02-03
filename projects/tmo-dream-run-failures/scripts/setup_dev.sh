@@ -13,7 +13,8 @@ then
     export DIR_PSDM=/sdf/group/lcls/ds/ana/
     export SIT_PSDM_DATA=/sdf/data/lcls/ds/
     # choose specific psana release here:
-    export LCLS2_RELEASE=/sdf/group/lcls/ds/ana/sw/conda2/rel/lcls2_112025
+    #export LCLS2_RELEASE=/sdf/group/lcls/ds/ana/sw/conda2/rel/lcls2_112025
+    export LCLS2_RELEASE=/sdf/home/m/monarin/lcls2
 
     PATH_PS=/sdf/group/lcls/ds/ana/sw/conda2/inst/envs/ps_20241122
     conda activate dream
